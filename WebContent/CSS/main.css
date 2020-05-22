@@ -18,23 +18,8 @@ table th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
-  background-color: #ff8080;
+  background-color: #4CAF50;
   color: white;
-}
-
-.oikealle{
-	text-align: right;	
-}
-
-
-.keskelle{
-	text-align: right;	
-}
-
-
-#lisaa, #takaisin{
-	color: white;	
-	cursor: pointer;	
 }
 
 .poista{
@@ -43,7 +28,12 @@ table th {
 	cursor: pointer;	
 }
 
-.muutos{
-	text-decoration: underline;
+.oikealle{
+	text-align: right;	
+}
+
+#uusiAsiakas, #takaisin{
+	color: white;	
 	cursor: pointer;	
 }
+

@@ -22,43 +22,43 @@ public class Asiakkaat extends HttpServlet {
         super();
         System.out.println("Asiakkaat.Asiakkaat()");
     }
-    
-	//Asiakkkaan hakeminen
+	//Asikkaan hakeminen
+    // GET  /asiakkaat
+  	// GET  /asiakkaat/{hakusana} 
+    // GET  /asiakkaat/haeyksi/{id}
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-			System.out.println("Asiakkaat.doGet()");
-			String pathInfo = request.getPathInfo();	//haetaan kutsun polkutiedot, esim. /aalto			
-			System.out.println("polku: "+pathInfo);	
-			String strJSON="";
-			ArrayList<Asiakas> asiakkaat;
-			Dao dao = new Dao();			
-			if(pathInfo == null) {
-				asiakkaat = dao.listaaKaikki();
-				strJSON = new JSONObject().put("asiakkaat", asiakkaat).toString();
-			}else if (pathInfo.indexOf("haeyksi")!=-1) {
-				int asiakas_id = Integer.parseInt(pathInfo.replace("/haeyksi/", ""));
-				Asiakas asiakas = dao.etsiAsiakas(asiakas_id);
-				if(asiakas==null) {
-					strJSON = "{}";
-				}else {
-					JSONObject JSON = new JSONObject();
-					JSON.put("asiakas_id", asiakas.getAsiakas_id());
-					JSON.put("etunimi", asiakas.getEtunimi());
-					JSON.put("sukunimi", asiakas.getSukunimi());
-					JSON.put("puhelin", asiakas.getPuhelin());
-					JSON.put("sposti", asiakas.getSposti());
-					strJSON = JSON.toString();
-				}
-			}else { 
-				String hakusana = pathInfo.replace("/", "");
-				asiakkaat = dao.listaaKaikki(hakusana);
-				System.out.println(asiakkaat);
-				strJSON = new JSONObject().put("asiakkaat", asiakkaat).toString();	
-			}
-			response.setContentType("application/json");
-			PrintWriter out = response.getWriter();
-			out.println(strJSON);		
+		System.out.println("Asiakkaat.doGet()");
+		String pathInfo = request.getPathInfo();	//haetaan kutsun polkutiedot, esim. /haeyksi/5			
+		System.out.println("polku on: "+pathInfo);		
+		String strJSON="";
+		ArrayList<Asiakas> asiakkaat;
+		Dao dao = new Dao();
+		if(pathInfo==null) { //Haetaan kaikki asiakkaat 
+			asiakkaat = dao.listaaKaikki();
+			strJSON = new JSONObject().put("asiakkaat", asiakkaat).toString();	
+		}else if(pathInfo.indexOf("haeyksi")!=-1) {		//polussa on sana "haeyksi", eli haetaan yhden asiakkaan tiedot
+			int asiakas_id = Integer.parseInt(pathInfo.replace("/haeyksi/", "")); //poistetaan polusta "/haeyksi/", j‰ljelle j‰‰ id		
+			Asiakas asiakas = dao.etsiAsiakas(asiakas_id);
+			if(asiakas==null){ //Jos asiakasta ei lˆytynyt, niin palautetaan tyhj‰ objekti
+				strJSON = "{}";
+			}else{	
+				JSONObject JSON = new JSONObject();
+				JSON.put("asiakas_id", asiakas.getAsiakas_id());
+				JSON.put("etunimi", asiakas.getEtunimi());
+				JSON.put("sukunimi", asiakas.getSukunimi());
+				JSON.put("puhelin", asiakas.getPuhelin());	
+				JSON.put("sposti", asiakas.getSposti());	
+				strJSON = JSON.toString();
+			}			
+		}else{ //Haetaan hakusanan mukaiset asiakkaat
+			String hakusana = pathInfo.replace("/", "");	
+			asiakkaat = dao.listaaKaikki(hakusana);
+			strJSON = new JSONObject().put("asiakkaat", asiakkaat).toString();				
+		}	
+		response.setContentType("application/json");
+		PrintWriter out = response.getWriter();
+		out.println(strJSON);			
 	}
-	
 	//Asiakkaan lis‰‰minen
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		System.out.println("Asiakkaat.doPost()");
@@ -78,12 +78,13 @@ public class Asiakkaat extends HttpServlet {
 		}		
 	}
 	
-	//Asiakkaan muuttaminen
+	// Muutetaan asiakkaan tietoja
+	// PUT  /asiakkaat
 	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		System.out.println("Asiakkaat.doPut()");
-		JSONObject jsonObj = new JsonStrToObj().convert(request); 		
-		Asiakas asiakas = new Asiakas();
-		asiakas.setAsiakas_id(Integer.parseInt(jsonObj.getString("asiakas_id")));
+		System.out.println("Asiakkaat.doPut()");		
+		JSONObject jsonObj = new JsonStrToObj().convert(request); //Muutetaan kutsun mukana tuleva json-string json-objektiksi			
+		Asiakas asiakas = new Asiakas();	
+		asiakas.setAsiakas_id(Integer.parseInt(jsonObj.getString("asiakas_id"))); //asiakas_id on String, joka pit‰‰ muuttaa int
 		asiakas.setEtunimi(jsonObj.getString("etunimi"));
 		asiakas.setSukunimi(jsonObj.getString("sukunimi"));
 		asiakas.setPuhelin(jsonObj.getString("puhelin"));
@@ -91,13 +92,13 @@ public class Asiakkaat extends HttpServlet {
 		response.setContentType("application/json");
 		PrintWriter out = response.getWriter();
 		Dao dao = new Dao();			
-		if(dao.muutaAsiakas(asiakas)){
-			out.println("{\"response\":1}");  
-		}else{
-			out.println("{\"response\":0}");  
-		}		
+		if(dao.muutaAsiakas(asiakas)) { //metodi palauttaa true/false
+			out.println("{\"response\":1}");  //Tietojen p‰ivitys onnistui {"response":1}	
+		}else {
+			out.println("{\"response\":0}");  //Tietojen p‰ivitys ep‰onnistui {"response":0}	
+		} 		
 	}
-	
+		
 	//Asiakkaan poistaminen
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		System.out.println("Asiakkaat.doDelete()");	

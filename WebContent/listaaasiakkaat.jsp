@@ -1,3 +1,4 @@
+<%@ taglib uri = "http://java.sun.com/jsp/jstl/core" prefix = "c" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
@@ -9,84 +10,47 @@
 <title>Asiakkaiden listaus</title>
 </head>
 <body>
+<form action="haeasiakkaat" method="get">
 	<table id="listaus">
 		<thead>	
 			<tr>
-				<th colspan="6" class="oikealle"><span id="uusiAsiakas">Lis‰‰ uusi asiakas</span></th>
+				<th colspan="5" class="oikealle"><a href="lisaaasiakas.jsp">Lis‰‰ uusi asiakas</a></th>
 			</tr>
 			<tr>
 				<th colspan="3" class="oikealle">Hakusana:</th>
-				<th><input type="text" id="hakusana"></th>
-				<th><input type="button" id="hae" value="Hae"></th>
-				<th>&nbsp;</th>	
+				<th colspan="3"><input type="text" name="hakusana" id="hakusana" value="${param['hakusana']}"></th>
+				<th><input type="submit" value="hae" id="hakunappi"></th>
 			</tr>		
 			<tr>
 				<th>Etunimi</th>
 				<th>Sukunimi</th>
 				<th>Puhelin</th>
 				<th>Sposti</th>	
-				<th>&nbsp;</th>	
-				<th>&nbsp;</th>				
+				<th></th>				
 			</tr>
 		</thead>
 		<tbody>
+		<c:forEach items="${asiakkaat}" var="listItem">
+				<tr>
+			        <td>${listItem.etunimi}</td>
+			        <td>${listItem.sukunimi}</td>
+			        <td>${listItem.puhelin}</td>
+			        <td>${listItem.sposti}</td>
+			        <td>
+			        	<a href="muutaasiakas?asiakas_id=${listItem.asiakas_id}" class="muuta">muuta</a>
+			        	<a onclick="varmista('${listItem.asiakas_id}')" class="poista">poista</a>			        	
+			        </td>
+		        </tr>
+		    </c:forEach>	
 		</tbody>
 	</table>
 <script>
-$(document).ready(function(){
-	
-	$("#uusiAsiakas").click(function(){
-		document.location="lisaaasiakas.jsp";
-	});
-	
-	$(document.body).on("keydown", function(event){
-		  if(event.which==13){ //Enteri‰ painettu, ajetaan haku
-			  haeTiedot();
-		  }
-	});	
-	$("#hae").click(function(){	
-		haeTiedot();
-	});
-	$("#hakusana").focus();//vied‰‰n kursori hakusana-kentt‰‰n sivun latauksen yhteydess‰
-	haeTiedot();
-});
-function haeTiedot(){	
-	$("#listaus tbody").empty();
-	$.getJSON({url:"asiakkaat/"+$("#hakusana").val(), type:"GET", dataType:"json", success:function(result){	
-		$.each(result.asiakkaat, function(i, field){  
-        	var htmlStr;
-        	htmlStr+="<tr id='rivi_"+field.asiakas_id+"'>";
-        	htmlStr+="<td>"+field.etunimi+"</td>";
-        	htmlStr+="<td>"+field.sukunimi+"</td>";
-        	htmlStr+="<td>"+field.puhelin+"</td>";
-        	htmlStr+="<td>"+field.sposti+"</td>";  
-        	htmlStr+="<td><span class='poista' onclick=poista("+field.asiakas_id+",'"+field.etunimi+"','"+field.sukunimi+"')>Poista</span></td>"; 
-        	htmlStr+="<td><span class='muutos' onclick=muuta("+field.asiakas_id+",'"+field.etunimi+"','"+field.sukunimi+"')>Muuta</span></td>"; 
-        	htmlStr+="</tr>";
-        	$("#listaus tbody").append(htmlStr);
-        });
-    }});	
-}
-function poista(asiakas_id, etunimi, sukunimi){
-	if(confirm("Poista asiakas " + etunimi +" "+ sukunimi +"?")){	
-		$.ajax({url:"asiakkaat/"+asiakas_id, type:"DELETE", dataType:"json", success:function(result) { //result on joko {"response:1"} tai {"response:0"}
-	        if(result.response==0){
-	        	$("#ilmo").html("Asiakkaan poisto ep‰onnistui.");
-	        }else if(result.response==1){
-	        	$("#rivi_"+asiakas_id).css("background-color", "red"); //V‰rj‰t‰‰n poistetun asiakkaan rivi
-	        	alert("Asiakkaan " + etunimi +" "+ sukunimi +" poisto onnistui.");
-				haeTiedot();        	
-			}
-	    }});
+function varmista(asiakas_id){
+	if(confirm("Haluatko varmasti poistaa asiakkaan "+ asiakas_id + "?")){
+		document.location="poistaasiakas?asiakas_id="+asiakas_id;
 	}
-}
-
-function muuta(asiakas_id, etunimi, sukunimi) {
-	if(confirm("Haluatko muuttaa asiakasta " + etunimi + " " + sukunimi + "?")){	
-		document.location="muutaasiakas.jsp?asiakas_id=" + asiakas_id;
-	}
-}
-
+}	
 </script>
+</form>
 </body>
 </html>
